@@ -20,9 +20,12 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
+#include "dma.h"
 #include "i2c.h"
 #include "i2s.h"
 #include "spi.h"
+#include "tim.h"
 #include "usb_host.h"
 #include "gpio.h"
 
@@ -62,6 +65,21 @@ void MX_USB_HOST_Process(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+/*
+uint16_t adcBuffer[256];
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	static uint8_t index = 0;
+	adcBuffer[index++] = HAL_ADC_GetValue(&hadc1);
+}
+*/
+unit16_t dmaBuff[16];
+void oversampled(DMA_HandleTypeDef *_hdma)
+{
+
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -97,8 +115,17 @@ int main(void)
   MX_I2S3_Init();
   MX_SPI1_Init();
   MX_USB_HOST_Init();
+  MX_ADC1_Init();
+  MX_TIM3_Init();
+  MX_DMA_Init();
   /* USER CODE BEGIN 2 */
+  //HAL_ADC_Start_IT(&hadc1); 	//start ADC
 
+  HAL_TIM_Base_Start(&htim3);	//start timer
+
+  HAL_DMA_RegisterCallback(&hdma_adc1, HAL_DMA_XFER_CPLT_CB_ID, oversampled);
+
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)dmaBuff, sizeof(dmaBuff)/sizeof(dmaBuff[0]));
   /* USER CODE END 2 */
 
   /* Infinite loop */
